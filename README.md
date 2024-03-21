@@ -49,6 +49,7 @@ Generate an app password for the labeler service in the app, and replace "fak3-t
 cat <<SYSTEMD_UNIT_FILE | sudo tee /etc/systemd/system/baatl-autolabeler.service
 [Unit]
 Description=BAATL Auto-Labeler
+Documentation=https://github.com/baatl/baatl-autolabeler
 After=network.target
 
 [Service]
