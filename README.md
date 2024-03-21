@@ -51,9 +51,12 @@ cat <<SYSTEMD_UNIT_FILE | sudo tee /etc/systemd/system/baatl-autolabeler.service
 Description=BAATL Auto-Labeler
 Documentation=https://github.com/baatl/baatl-autolabeler
 After=network.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
 
 [Service]
 ExecStart=/usr/bin/node /ozone/auto/baatl-autolabeler/index.js
+Restart=on-failure
 Environment=BSKY_HANDLE=baatl.mastod.one
 Environment=BSKY_PASSWORD=fak3-t3st-pa55-lm4o
 
