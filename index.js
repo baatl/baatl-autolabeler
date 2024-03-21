@@ -27,7 +27,7 @@ const labeler = agent.withProxy('atproto_labeler', agent.session.did)
 // function to apply a given label to a given host
 const labelPost = (label, uri, cid) => {
   const dry = process.env.DRY_RUN?.includes('label')
-  
+
   if (process.env.LOG_POINTS?.includes('label'))
     console.log(`${dry ? 'detecting' : 'labeling'} ${label}: ${uri}`)
 
@@ -64,7 +64,7 @@ const junkSet = new Set([
   'image', 'pic', 'pics', 'picture', 'photo',
   'meme', 'wtf', 'omg', 'lol', 'asdf', 'thing',
   'art', 'content', 'alt', 'text', 'alt text',
-  'note', 'words',
+  'note', 'words', 'test'
 ])
 // remove articles and punctuation from the ends of the string
 const trimFat = (str) => str.replace(/^[\s\p{P}]*(?:a|an|the|some|this|that|more)?[\s\p{P}]*(.*[^\s\p{P}])[\s\p{P}]*$/u,'$1')
