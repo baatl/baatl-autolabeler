@@ -21,6 +21,10 @@ await agent.login({
   password: process.env.BSKY_PASSWORD ?? '',
 })
 
+const MINIMUM_FOLLOWERS = process.env.MINIMUM_FOLLOWERS ?? ''
+const minimumFollowersCount = MINIMUM_FOLLOWERS ?
+  parseInt(MINIMUM_FOLLOWERS) : 0
+
 // emit events using a proxy with the labeler service identifier
 const labeler = agent.withProxy('atproto_labeler', agent.session.did)
 
@@ -80,8 +84,19 @@ const hasJunkAltText = (images) => {
   return false
 }
 
+const handleImagePost = (post, uri, cid) => {
+  if (hasNoAltText(post.embed.images)) {
+    labelPost('no-alt-text', uri, cid)
+  }
+
+  // this isn't an else-if, because it's possible for a post to have
+  // junk alt text on some embedded images and no alt text on others
+  if (hasJunkAltText(post.embed.images))
+    labelPost('non-alt-text', uri, cid)
+}
+
 // function to apply any necessary labels to a post
-const handlePost = (post, uri, cid) => {
+const handlePost = async (post, repo, uri, cid) => {
   if (!cid) return
   if (process.env.LOG_POINTS?.includes('post'))
     console.log(`checking post: ${uri}`)
@@ -89,14 +104,15 @@ const handlePost = (post, uri, cid) => {
     if (process.env.LOG_POINTS?.includes('image'))
       console.log(`post has images: ${uri}`)
 
-    if (hasNoAltText(post.embed.images)) {
-      labelPost('no-alt-text', uri, cid)
-    }
-
-    // this isn't an else-if, because it's possible for a post to have
-    // junk alt text on some embedded images and no alt text on others
-    if (hasJunkAltText(post.embed.images))
-      labelPost('non-alt-text', uri, cid)
+    if (MINIMUM_FOLLOWERS) {
+      const authorProfile = (await
+        agent.app.bsky.actor.getProfile({actor: repo})).data
+      const followersCount = authorProfile.followersCount
+      if (process.env.LOG_POINTS?.includes('followers'))
+        console.log(`${followersCount} following author of ${uri}`)
+      if (followersCount >= minimumFollowersCount)
+        handleImagePost(post, uri, cid)
+    } else return handleImagePost(post, uri, cid)
   }
 }
 
@@ -105,7 +121,7 @@ const handleMessage = (message) => {
     const repo = message.repo
     for (const op of message.ops)
       if (AppBskyFeedPost.isRecord(op?.payload))
-        handlePost(op.payload,
+        handlePost(op.payload, repo,
           `at://${message.repo}/${op.path}`,
           op.cid?.toString())
   }
