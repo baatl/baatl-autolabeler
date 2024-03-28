@@ -1,5 +1,6 @@
 import {
   AppBskyEmbedImages,
+  AppBskyEmbedRecordWithMedia,
   AppBskyFeedPost,
   BskyAgent,
 } from '@atproto/api'
@@ -71,7 +72,8 @@ const junkSet = new Set([
   'note', 'words', 'test'
 ])
 // remove articles and punctuation from the ends of the string
-const trimFat = (str) => str.replace(/^[\s\p{P}]*(?:a|an|the|some|this|that|more)?[\s\p{P}]*(.*[^\s\p{P}])[\s\p{P}]*$/u,'$1')
+const trimFat = (str) =>
+  str.replace(/^[\s\p{P}]*(?:a|an|the|some|this|that|more)?[\s\p{P}]*(.*[^\s\p{P}])[\s\p{P}]*$/u,'$1')
 
 // function to test if any of a post's images' alt text are lacking
 const hasJunkAltText = (images) => {
@@ -84,15 +86,24 @@ const hasJunkAltText = (images) => {
   return false
 }
 
-const handleImagePost = (post, uri, cid) => {
-  if (hasNoAltText(post.embed.images)) {
+const handlePostImages = (images, uri, cid) => {
+  if (hasNoAltText(images)) {
     labelPost('no-alt-text', uri, cid)
   }
 
   // this isn't an else-if, because it's possible for a post to have
   // junk alt text on some embedded images and no alt text on others
-  if (hasJunkAltText(post.embed.images))
+  if (hasJunkAltText(images))
     labelPost('non-alt-text', uri, cid)
+}
+
+const imagesFromPost = (post) => {
+  if (AppBskyEmbedImages.isMain(post.embed))
+    return post.embed.images
+  else if (AppBskyEmbedRecordWithMedia.isMain(post.embed) &&
+    AppBskyEmbedImages.isMain(post.embed.media))
+    return post.embed.media.images
+  else return null
 }
 
 // function to apply any necessary labels to a post
@@ -100,7 +111,10 @@ const handlePost = async (post, repo, uri, cid) => {
   if (!cid) return
   if (process.env.LOG_POINTS?.includes('post'))
     console.log(`checking post: ${uri}`)
-  if (AppBskyEmbedImages.isMain(post.embed)) {
+
+  const images = imagesFromPost(post)
+
+  if (images) {
     if (process.env.LOG_POINTS?.includes('image'))
       console.log(`post has images: ${uri}`)
 
@@ -111,8 +125,8 @@ const handlePost = async (post, repo, uri, cid) => {
       if (process.env.LOG_POINTS?.includes('followers'))
         console.log(`${followersCount} following author of ${uri}`)
       if (followersCount >= minimumFollowersCount)
-        handleImagePost(post, uri, cid)
-    } else return handleImagePost(post, uri, cid)
+        handlePostImages(images, uri, cid)
+    } else return handlePostImages(images, uri, cid)
   }
 }
 
