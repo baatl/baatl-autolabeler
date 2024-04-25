@@ -14,7 +14,7 @@ Generate an [App Password](https://bsky.app/settings/app-passwords):
 
 ```sh
 BSKY_HANDLE=baatl.mastod.one BSKY_PASSWORD=fak3-t3st-pa55-lm4o \
-    LOG_POINTS=image,label DRY_RUN=label node index.js
+    LOG_POINTS=image,label DRY_RUN=label node firehoseLabeler.js
 ```
 
 ## Deploying
@@ -41,26 +41,13 @@ cd baatl-autolabeler
 npm install'
 ```
 
-### Configuration
-
-Generate an app password for the labeler service in the app, and replace "fak3-t3st-pa55-lm4o" with that password when running this command:
+Generate an app password for the labeler service in the app, and add it with login credentials to the labeler's environment file (here configured at `/ozone/labelers/baatl.env`):
 
 ```
-cat <<SYSTEMD_UNIT_FILE | sudo tee /etc/systemd/system/baatl-autolabeler.service
-[Unit]
-Description=BAATL Auto-Labeler
-Documentation=https://github.com/baatl/baatl-autolabeler
-After=network.target
-StartLimitIntervalSec=500
-StartLimitBurst=5
-
-[Service]
-ExecStart=/usr/bin/node /ozone/auto/baatl-autolabeler/index.js
-Restart=on-failure
-Environment=BSKY_HANDLE=baatl.mastod.one
-Environment=BSKY_PASSWORD=fak3-t3st-pa55-lm4o
-
-[Install]
-WantedBy=default.target
-SYSTEMD_UNIT_FILE
+BSKY_HANDLE=baatl.mastod.one
+BSKY_PASSWORD=fak3-t3st-pa55-lm4o
 ```
+
+(Any further environment variables to configure the autolabeler's behavior, such as `MINIMUM_FOLLOWERS` or `LOG_POINTS`, should be added to that environment file as well.)
+
+Finally, run `sudo systemctl enable baatl-autolabeler/units/baatl-autolabeler.service` to enable the systemd unit for the service.

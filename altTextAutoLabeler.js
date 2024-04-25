@@ -41,7 +41,7 @@ const imagesFromPost = (post) => {
   else return null
 }
 
-export default class PostHandler {
+export default class AltTextAutoLabeler {
   constructor(agent, opts) {
     this.agent = agent
     // emit events using a proxy with the labeler service identifier

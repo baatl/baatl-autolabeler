@@ -9,7 +9,7 @@ import {
   // SubscribeReposMessage,
 } from 'atproto-firehose'
 
-import PostHandler from './postHandler.js'
+import AltTextAutoLabeler from './altTextAutoLabeler.js'
 
 // the base agent for logging in to submit labels
 const agent = new BskyAgent({
@@ -26,7 +26,7 @@ const MINIMUM_FOLLOWERS = process.env.MINIMUM_FOLLOWERS ?? ''
 const minimumFollowersCount = MINIMUM_FOLLOWERS ?
   parseInt(MINIMUM_FOLLOWERS) : 0
 
-const ph = new PostHandler(agent, {minimumFollowersCount})
+const ph = new AltTextAutoLabeler(agent, {minimumFollowersCount})
 
 const handleMessage = (message) => {
   if (ComAtprotoSyncSubscribeRepos.isCommit(message)) {
