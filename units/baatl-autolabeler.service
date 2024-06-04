@@ -2,8 +2,8 @@
 Description=BAATL Auto-Labeler
 After=network.target
 Requires=ozone.service
-StartLimitIntervalSec=500
-StartLimitBurst=5
+StartLimitIntervalSec=300
+StartLimitBurst=24
 
 [Service]
 ExecStart=/usr/bin/node /ozone/auto/baatl-autolabeler/firehoseLabeler.js
