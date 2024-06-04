@@ -108,7 +108,7 @@ export default class AltTextAutoLabeler {
 
       if (this.minimumFollowersCount) {
         const authorProfile = (await
-          agent.app.bsky.actor.getProfile({actor: repo})).data
+          this.agent.app.bsky.actor.getProfile({actor: repo})).data
         const followersCount = authorProfile.followersCount
         if (process.env.LOG_POINTS?.includes('followers'))
           console.log(`${followersCount} following author of ${uri}`)
